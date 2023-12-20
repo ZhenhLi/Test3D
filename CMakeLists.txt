@@ -60,9 +60,11 @@ target_link_libraries(vtk_test ${VTK_LIBRARIES} ${EXTRA_NEED_LIBS})
 
 
 # eigen
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIRS})
 
-# add_executable(eigen_test src/testEigen.cpp)
-# target_link_libraries(eigen_test ${VTK_LIBRARIES} ${EXTRA_NEED_LIBS})
+add_executable(eigen_test src/testEigen.cpp)
+target_link_libraries(eigen_test ${EIGEN_LIBRARIES} ${EXTRA_NEED_LIBS})
 
 
 # include_directories(${Open3D_INCLUDE_DIRS})
