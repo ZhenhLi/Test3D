@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Eigen/Eigen>
+#include <cfloat>
 
 int testCase1() {
 
@@ -78,6 +79,34 @@ Eigen::Isometry3f pointToPlane(std::vector<Eigen::Vector3f>& src, std::vector<Ei
                 ).toRotationMatrix();
   T.translation() = x.block(3, 0, 3, 1);
   return T;
+}
+
+Eigen::Isometry3f alignToOriginAndXAxis(Eigen::Vector3f p, Eigen::Vector3f n) {
+  Eigen::Vector3f xAxis = Eigen::Vector3f::UnitX();
+  double angle = acos(xAxis.dot(n));
+  Eigen::Vector3f axis = (n.cross(xAxis)).normalized();
+  // if n parallel to x axis, cross product is [0, 0, 0]
+  if (n.y() == 0 && n.z() == 0)
+    axis = Eigen::Vector3f::UnitY();
+  Eigen::Translation3f tra(-p);
+  return Eigen::Isometry3f(Eigen::AngleAxisf(angle, axis) * tra);
+}
+
+float planarRotAngle(Eigen::Vector3f p_i, Eigen::Vector3f n_i, Eigen::Vector3f p_j) {
+  Eigen::Isometry3f T_ms_g = alignToOriginAndXAxis(p_i, n_i);
+  Eigen::Vector3f p_j_image = T_ms_g * p_j;
+  // can ignore x coordinate, since we rotate around x axis
+  return atan2f(p_j_image.z(), p_j_image.y());
+}
+
+bool isPoseSimilar(Eigen::Isometry3f P_i, Eigen::Isometry3f P_j, float t_rot, float t_tra) {
+  // Traslation
+  float d_tra = (P_i.translation() - P_j.translation()).norm();
+  // Rotation
+  float d = Eigen::Quaternionf(P_i.linear()).dot(Eigen::Quaternionf(P_j.linear()));
+//   float d_rot = rad2degM(std::acos(2 * d * d - 1));
+  float d_rot = std::acos(2 * d * d - 1) / M_PI * 180;
+  return d_rot <= t_rot && d_tra <= t_tra;
 }
 
 int testCase2_pointSetPCA() {
