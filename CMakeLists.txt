@@ -46,17 +46,17 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_executable(open3d_test src/testOpen3D.cpp)
 target_link_libraries(open3d_test ${Open3D_LIBRARIES} ${EXTRA_NEED_LIBS})
 
-# vtk
-set(VTK_DIR "path/to/VTK-build")
-find_package(VTK REQUIRED)
-message("VTK VERSION:${VTK_VERSION}")
-message("VTK_LIBRARIES:${VTK_LIBRARIES}")
-message("VTK_INCLUDE_DIRS:${VTK_INCLUDE_DIRS}")
-message("VTK_USE_FILE:${VTK_USE_FILE}")
-include(${VTK_USE_FILE})
+# # vtk
+# set(VTK_DIR "path/to/VTK-build")
+# find_package(VTK REQUIRED)
+# message("VTK VERSION:${VTK_VERSION}")
+# message("VTK_LIBRARIES:${VTK_LIBRARIES}")
+# message("VTK_INCLUDE_DIRS:${VTK_INCLUDE_DIRS}")
+# message("VTK_USE_FILE:${VTK_USE_FILE}")
+# include(${VTK_USE_FILE})
 
-add_executable(vtk_test src/testVTK.cpp)
-target_link_libraries(vtk_test ${VTK_LIBRARIES} ${EXTRA_NEED_LIBS})
+# add_executable(vtk_test src/testVTK.cpp)
+# target_link_libraries(vtk_test ${VTK_LIBRARIES} ${EXTRA_NEED_LIBS})
 
 
 # eigen
@@ -81,3 +81,7 @@ target_link_libraries(eigen_test ${EIGEN_LIBRARIES} ${EXTRA_NEED_LIBS})
 # target_include_directories(t3DDemo PUBLIC ${Open3D_INCLUDE_DIRS})
 # include_directories("usr/include/eigen3")
 
+
+# SLAM例程
+add_executable(slam_test src/testSLAM/testSLAM_main.cpp)
+target_link_libraries(slam_test ${OpenCV_LIBRARIES} ${EIGEN_LIBRARIES} ${Open3D_LIBRARIES} ${EXTRA_NEED_LIBS})

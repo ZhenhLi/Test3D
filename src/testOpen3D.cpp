@@ -38,6 +38,11 @@ int testCase2() {
   return 0;
 }
 
+int testCase3_upsampling() {
+
+  return 0;
+}
+
 int main() {
   testCase1();
   testCase2();
