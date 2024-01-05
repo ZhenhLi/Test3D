@@ -43,9 +43,36 @@ int testCase3_upsampling() {
   return 0;
 }
 
+int testCase3_Tensor() {
+  std::cout << "--------- Test open3d::core::Tensor ---------" << std::endl;
+  // std::vector<Eigen::Vector3d> aVec;
+  // open3d::core::SizeVector shape = {640, 480, 3};
+  // open3d::core::Tensor a(aVec, shape);
+
+  open3d::core::Dtype dtype = open3d::core::Float32;  // OPEN3D_API extern const Dtype Undefined;
+                                                      // OPEN3D_API extern const Dtype Float32;
+                                                      // OPEN3D_API extern const Dtype Float64;
+                                                      // OPEN3D_API extern const Dtype Int8;
+                                                      // OPEN3D_API extern const Dtype Int16;
+                                                      // OPEN3D_API extern const Dtype Int32;
+                                                      // OPEN3D_API extern const Dtype Int64;
+                                                      // OPEN3D_API extern const Dtype UInt8;
+                                                      // OPEN3D_API extern const Dtype UInt16;
+                                                      // OPEN3D_API extern const Dtype UInt32;
+                                                      // OPEN3D_API extern const Dtype UInt64;
+                                                      // OPEN3D_API extern const Dtype Bool;
+  std::vector<float> vec_float{0.0, 0.0, 0.0};
+  open3d::core::SizeVector shape = {1, 3};
+  open3d::core::Tensor src_pt(vec_float, shape, dtype, open3d::core::Device("CPU:0"));
+  std::cout << src_pt.ToString() << std::endl;
+  // std::cout << a.ToString() << std::endl;
+
+  return 0;
+}
+
 int main() {
   testCase1();
-  testCase2();
-
+  // testCase2();
+  testCase3_Tensor();
   return 0;
 }
