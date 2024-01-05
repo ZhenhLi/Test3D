@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Eigen/Eigen>
 #include <cfloat>
+#include <Eigen/Geometry>
 
 int testCase1() {
 
@@ -115,10 +116,55 @@ int testCase2_pointSetPCA() {
   return 0;
 }
 
+int testCase3_Matrix() {
+  Eigen::Matrix3d Mat1;
+  Mat1 << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+  std::cout << "mat1 = \n" << Mat1 << std::endl;
+  std::cout << "mat1转置矩阵 \n" << Mat1.transpose() << std::endl;
+  std::cout << "mat1共额伴随矩阵 \n" << Mat1.adjoint() << std::endl;
+  std::cout << "mat1逆矩阵 \n" << Mat1.inverse() << std::endl;
+  std::cout << "mat1行列式 \n" << Mat1.determinant() << std::endl;
+  Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensover(Mat1);
+  if (eigensover.info() != Eigen::Success) abort;
+  std::cout << "特征值: \n" << eigensover.eigenvalues() << std::endl;
+  std::cout << "特征向量: \n" << eigensover.eigenvectors() << std::endl;
+
+  return 0;
+}
+
+int testCase4_AngleAxisf() {
+  // https://blog.csdn.net/qq_38800089/article/details/108768388
+  // Eigen::AngleAxisd rotation_vector(alpha, Eigen::Vector3d(x, y, z));
+  // Eigen::AngleAxisd yawAngle()
+
+  float alpha = 0;
+
+  std::cout << Eigen::AngleAxisf(1, Eigen::Vector3f(1, 0, 0)) * Eigen::AngleAxisf(2, Eigen::Vector3f(0, 1, 0)) << std::endl;
+
+  Eigen::AngleAxisf aa1(1, Eigen::Vector3f(1, 0, 0));
+  Eigen::AngleAxisf aa2(2, Eigen::Vector3f(0, 1, 0));
+  Eigen::Quaternionf b = aa1 * aa2; // 轴角相乘，结果为四元数
+  Eigen::AngleAxisf a_mul(b);
+  std::cout << b << std::endl;
+  std::cout << a_mul.angle() << a_mul.axis().transpose() << std::endl;
+  return 0;
+}
+
+int testCase5_AngleAxisPriorConstraints() {
+  // 角轴先验
+  float thetaPrior;
+  
+
+  return 0;
+}
+
 int main() {
   std::cout << "========== test Eigen ==========" << std::endl;
 
   testCase1();
+
+  testCase3_Matrix();
+  testCase4_AngleAxisf();
 
   return 0;
 }
