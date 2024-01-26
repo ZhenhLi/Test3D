@@ -158,6 +158,63 @@ int testCase5_AngleAxisPriorConstraints() {
   return 0;
 }
 
+int testCase5_Document() {
+  // Matrix<>模板类定义
+  // Matrix<typename Scalar, int RowsAtCompileTime, int ColsAtCompileTime>
+  // typedef Matrix<double, Dynamic, Dynamic> MatrixXd;
+  // typedef Matrix<int, Dynamic, 1> VectorXi;
+
+  // 向量初始化操作
+  {
+    Eigen::Vector3d a(5.0, 6.0, 7.0);
+  }
+  
+
+  // 获取元素 
+  // 所有元素：m(index)获取元素，与存储方式有关， eigen默认列顺序
+  // []只能访问向量元素，因为c++的[]只支持一个参数。
+  {
+    Eigen::MatrixXd m(2, 2);
+    m(0, 0) = 3;
+    m(1, 0) = 2.5;
+    m(0, 1) = -1;
+    m(1, 1) = m(1, 0) + m(0, 1);
+    std::cout << m << std::endl;
+  }
+  
+  {
+    Eigen::Matrix3f m;
+    // 逗号初始化设置矩阵和矢量的系数
+    m << 1, 2, 3,
+        4, 5, 6,
+        7, 8, 9;
+    std::cout << m << std::endl; 
+  }
+  
+  {
+    // Resizing
+    Eigen::MatrixXd m(2, 5);
+    m.resize(4, 3);
+    std::cout << m.rows() << "x" << m.cols() << std::endl; // 4 x 3
+
+    Eigen::VectorXd v(2);
+    v.resize(5);
+    std::cout << v.size() << std::endl; // 5
+    std::cout << v.rows() << "x" << v.cols() << std::endl; // 5 x 1
+  }
+
+  {
+    // MatrixAndVectorRunTime()
+    Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 3);
+    m = (m + Eigen::MatrixXd::Constant(3, 3, 1.2)) * 50;
+    std::cout << "m = " << std::endl << m << std::endl;
+    Eigen::VectorXd v(3);
+    v << 1, 2, 3;
+    std::cout << m * v << std::endl;
+  }
+  return 0;
+}
+
 int main() {
   std::cout << "========== test Eigen ==========" << std::endl;
 
@@ -165,6 +222,8 @@ int main() {
 
   testCase3_Matrix();
   testCase4_AngleAxisf();
+
+  testCase5_Document();
 
   return 0;
 }
