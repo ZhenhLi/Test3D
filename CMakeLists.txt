@@ -66,6 +66,11 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 add_executable(eigen_test src/testEigen.cpp)
 target_link_libraries(eigen_test ${EIGEN_LIBRARIES} ${EXTRA_NEED_LIBS})
 
+# opencv
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+add_executable(opencv_test src/testOpenCV.cpp)
+target_link_libraries(opencv_test ${OpenCV_LIBS})
 
 # include_directories(${Open3D_INCLUDE_DIRS})
 # link_directories(${Open3D_LIBRARY_DIRS})
