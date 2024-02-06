@@ -53,9 +53,53 @@ int testCase2_Corners() {
   return 0;
 }
 
+int testCase3_svd() {
+  // opencv求SVD
+  cv::Mat src = cv::imread("/home/lzh/Pictures/dataset2D/laser1.bmp", cv::IMREAD_GRAYSCALE);
+  cv::resize(src, src, cv::Size(800, 600));
+  cv::Mat src_ = src.clone();
+  src.convertTo(src, CV_64FC1);
+  cv::Mat U, W, V;
+  cv::SVD::compute(src, W, U, V);
+  std::cout << "W" << W.rows << ", " << W.cols << std::endl;
+  std::cout << "U" << U.rows << ", " << U.cols << std::endl;
+  std::cout << "V" << V.rows << ", " << V.cols << std::endl;
+  std::cout << "W value >> " << W << std::endl;
+
+  int set_dim = std::min(src.rows, src.cols);
+  cv::Mat W_ = cv::Mat(set_dim, set_dim, CV_64FC1, cv::Scalar(0));
+  double ratio = 0.01;
+  int set_rows = set_dim * ratio;
+  for (int i = 0; i < set_rows; i++) {
+    W_.at<double>(i, i) = W.at<double>(i, 0);
+  }
+  cv::Mat dst = U * W_ * V;
+  cv::namedWindow("dst", cv::WINDOW_AUTOSIZE);
+  cv::imshow("dst", dst);
+  cv::waitKey(0);
+  return 0;
+}
+
+// for testcase3 supplement
+int testCase3_svd_case2() {
+  float b[] ={1, 2, 3, 4, 5, 6, 7, 8, 9};
+  cv::Mat a = cv::Mat(3, 3, CV_32FC1, b);
+  cv::Mat w, u, vt;
+  cv::SVDecomp(a, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
+  std::cout << w << std::endl;
+  std::cout << u << std::endl;
+  std::cout << vt << std::endl;
+  cv::Mat c = vt.row(2).reshape(1, 3);
+  std::cout << c << std::endl;
+
+  return 0;
+}
+
 int main() {
   std::cout << "------- opencv test ------------" << std::endl;
 //   testCase1_showMat(); // ok
-  testCase2_Corners();
+  // testCase2_Corners(); // 提取角点
+  testCase3_svd();
+  testCase3_svd_case2();
   return 0;
 }
