@@ -95,11 +95,66 @@ int testCase3_svd_case2() {
   return 0;
 }
 
+int testCase4_calib() {
+  // 1 准备标定棋盘格图像
+  int boardWidth = 7; // 棋盘格横向内角点数量
+  int boardHeight = 7; // 棋盘格纵向内角点数量
+  float squareSize = 1.f; // 棋盘格格子大小，单位为米，随便设置，不影响相机内参计算
+  cv::Size boardSize(boardWidth, boardHeight);
+
+  std::vector<std::vector<cv::Point3f>> objectPoints;
+  std::vector<std::vector<cv::Point2f>> imagePoints;
+  std::vector<cv::Point2f> corners;
+
+  // 2 拍摄棋盘图像
+  cv::Mat image, gray;
+  cv::namedWindow("image", cv::WINDOW_NORMAL);
+  std::vector<cv::String> fileNames;
+  cv::glob("/home/lzh/Pictures/dataset2D/chessboard/801_93708/data/images/*.png", fileNames);
+
+  for  (size_t i = 0; i < fileNames.size(); i++) {
+    image = cv::imread(fileNames[i], cv::IMREAD_COLOR);
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+
+    // 3 读入图像数据，并提取角点
+    bool found = cv::findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH 
+                                                                      + cv::CALIB_CB_NORMALIZE_IMAGE 
+                                                                      + cv::CALIB_CB_FAST_CHECK);
+    if (found) {
+      cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS 
+                                                                                            + cv::TermCriteria::COUNT, 30, 0.1));
+      cv::drawChessboardCorners(image, boardSize, corners, found);
+      cv::imshow("image", image);
+      cv::waitKey();
+
+      std::vector<cv::Point3f> objectCorners;
+      for (int j = 0; j < boardHeight; j++) {
+        for (int k = 0; k < boardWidth; k++) {
+          objectCorners.push_back(cv::Point3f(k * squareSize, j * squareSize, 0));
+        }
+      }
+      objectPoints.push_back(objectCorners);
+      imagePoints.push_back(corners);
+    }
+  }
+
+  // 4 标定相机
+  cv::Mat cameraMatrix, distCoeffs;
+  std::vector<cv::Mat> rvecs, tvecs;
+  cv::calibrateCamera(objectPoints, imagePoints, image.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
+
+  std::cout << "Camera matrix:" << std::endl << cameraMatrix << std::endl;
+  std::cout << "Distortion coefficients:" << std::endl << distCoeffs << std::endl;
+
+  return 0;
+}
+
 int main() {
   std::cout << "------- opencv test ------------" << std::endl;
 //   testCase1_showMat(); // ok
   // testCase2_Corners(); // 提取角点
-  testCase3_svd();
-  testCase3_svd_case2();
+  // testCase3_svd(); // ok
+  // testCase3_svd_case2();
+  testCase4_calib(); // error
   return 0;
 }
