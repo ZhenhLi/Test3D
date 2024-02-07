@@ -90,3 +90,8 @@ target_link_libraries(opencv_test ${OpenCV_LIBS})
 # SLAM例程
 add_executable(slam_test src/testSLAM/testSLAM_main.cpp)
 target_link_libraries(slam_test ${OpenCV_LIBRARIES} ${EIGEN_LIBRARIES} ${Open3D_LIBRARIES} ${EXTRA_NEED_LIBS})
+
+
+# leetcode刷题
+add_executable(leetcode_test leetcode/main.cpp)
+target_link_libraries(leetcode_test ${OpenCV_LIBRARIES} ${EIGEN_LIBRARIES} ${Open3D_LIBRARIES} ${EXTRA_NEED_LIBS})
