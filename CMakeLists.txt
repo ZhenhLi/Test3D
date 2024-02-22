@@ -96,11 +96,58 @@ target_link_libraries(slam_test ${OpenCV_LIBRARIES} ${EIGEN_LIBRARIES} ${Open3D_
 add_executable(leetcode_test leetcode/main.cpp)
 target_link_libraries(leetcode_test ${OpenCV_LIBRARIES} ${EIGEN_LIBRARIES} ${Open3D_LIBRARIES} ${EXTRA_NEED_LIBS})
 
-# # libtorch
-# # project(test-libtorch)
-# set(Torch_DIR /home/lzh/code/libtorch/share/cmake/Torch)
-# find_package(Torch REQUIRED)
-# set(CMKAE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+# libtorch
+project(test-libtorch)
+# set(Torch_DIR /home/lzh/code/libtorch/share/cmake/ATen)
+set(Torch_DIR /home/lzh/code/libtorch/share/cmake/Torch)
+find_package(Torch REQUIRED)
+message(STATUS "Pytorch status:")
+message(STATUS "    libraries: ${TORCH_LIBRARIES}")
+# add_definitions(-D _GLIBCXX_USE_CXX11_ABI=0)
+set(CMKAE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+add_executable(libtorch_test src/testLibTorch.cpp)
+target_link_libraries(libtorch_test "${TORCH_LIBRARIES}")
+set_property(TARGET libtorch_test PROPERTY CXX_STANDARD 17)
+
+
+# include_directories(/home/lzh/code/libtorch/include/
+#                     /home/lzh/code/libtorch/include/torch/
+#                     /home/lzh/code/libtorch/include/torch/csrc/)
+
+# link_directories(/home/lzh/code/libtorch/lib/)
+
 # add_executable(libtorch_test src/testLibTorch.cpp)
-# target_link_libraries(libtorch_test "${TORCH_LIBRARIES}")
-# set_property(TARGET libtorch_test PROPERTY CXX_STANDARD 14)
+
+# set(BASE_LIBRARIES 
+# libasmjit.a
+# libnnapi_backend.so
+# libbackend_with_compiler.so 
+# libnnpack.a
+# libbenchmark.a
+#                libnnpack_reference_layers.a
+# libbenchmark_main.a
+#           libonnx.a
+# libc10.so
+#                     libonnx_proto.a
+# libcaffe2_protos.a           libprotobuf.a
+# libclog.a                    libprotobuf-lite.a
+# libcpuinfo.a                 libprotoc.a
+# libcpuinfo_internals.a       libpthreadpool.a
+# libdnnl.a                    libpytorch_qnnpack.a
+# libfbgemm.a                  libqnnpack.a
+# libfmt.a                     libshm.so
+# libfoxi_loader.a             libtensorpipe.a
+# libgloo.a                    libtensorpipe_uv.a
+# libgmock.a                   libtorchbind_test.so
+# libgmock_main.a              libtorch_cpu.so
+# libgomp-98b21ff3.so.1        libtorch_global_deps.so
+# libgtest.a                   libtorch_python.so
+# libgtest_main.a              libtorch.so
+# libittnotify.a               libunbox_lib.a
+# libjitbackend_test.so        libXNNPACK.a
+# libkineto.a
+# )
+
+# target_link_libraries(${PROJECT_NAME} ${BASE_LIBRARIES} )
+
+
