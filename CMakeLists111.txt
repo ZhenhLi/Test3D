@@ -1,0 +1,48 @@
+cmake_minimum_required(VERSION 3.0)
+project(libtorch_test)
+
+# set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++14 -pthread -fopenmp")
+
+find_package(OpenMP REQUIRED)
+
+include_directories(/home/lzh/code/libtorch/include/
+                    /home/lzh/code/libtorch/include/torch/
+                    /home/lzh/code/libtorch/include/torch/csrc/)
+
+link_directories(/home/lzh/code/libtorch/lib/)
+
+add_executable(libtorch_test src/testLibTorch.cpp)
+
+set(BASE_LIBRARIES 
+libasmjit.a
+libnnapi_backend.so
+libbackend_with_compiler.so 
+libnnpack.a
+libbenchmark.a
+               libnnpack_reference_layers.a
+libbenchmark_main.a
+          libonnx.a
+libc10.so
+                    libonnx_proto.a
+libcaffe2_protos.a           libprotobuf.a
+libclog.a                    libprotobuf-lite.a
+libcpuinfo.a                 libprotoc.a
+libcpuinfo_internals.a       libpthreadpool.a
+libdnnl.a                    libpytorch_qnnpack.a
+libfbgemm.a                  libqnnpack.a
+libfmt.a                     libshm.so
+libfoxi_loader.a             libtensorpipe.a
+libgloo.a                    libtensorpipe_uv.a
+libgmock.a                   libtorchbind_test.so
+libgmock_main.a              libtorch_cpu.so
+libgomp-98b21ff3.so.1        libtorch_global_deps.so
+libgtest.a                   libtorch_python.so
+libgtest_main.a              libtorch.so
+libittnotify.a               libunbox_lib.a
+libjitbackend_test.so        libXNNPACK.a
+libkineto.a
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX ${BASE_LIBRARIES})
+
+
