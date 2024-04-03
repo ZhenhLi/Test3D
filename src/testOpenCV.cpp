@@ -392,6 +392,70 @@ int testCase6_fillHole() {
   return 0;
 }
 
+int testCase7_PCA() {
+  // https://github.com/opencv/opencv/blob/4.x/modules/core/test/test_mat.cpp
+  std::cout << "PCA test" << std::endl;
+
+  const cv::Size sz(200, 500);
+  double diffPrjEps, diffBackPrjEps, prjEps, backPrjEps, evalEps, evecEps;
+  int maxComponents = 100;
+  double retainedVariance = 0.95;
+  cv::Mat rPoints(sz, CV_32FC1), rTestPoints(sz, CV_32FC1);
+  cv::RNG rng(12345);
+
+  rng.fill(rPoints, cv::RNG::UNIFORM, cv::Scalar::all(0.0), cv::Scalar::all(1.0));
+  rng.fill(rTestPoints, cv::RNG::UNIFORM, cv::Scalar::all(0.0), cv::Scalar::all(1.0));
+
+  cv::PCA rPCA(rPoints, cv::Mat(), CV_PCA_DATA_AS_ROW, maxComponents), cPCA;
+
+  // 1. check C++ PCA & ROW
+  cv::Mat rPrjTestPoints = rPCA.project(rTestPoints);
+  cv::Mat rBackPrjTestPoints = rPCA.backProject(rPrjTestPoints);
+
+  cv::Mat avg(1, sz.width, CV_32FC1);
+  cv::reduce(rPoints, avg, 0, cv::REDUCE_AVG);
+  cv::Mat Q = rPoints - cv::repeat(avg, rPoints.rows, 1);
+  cv::Mat Qt = Q.t();
+  cv::Mat eval, evec;
+  Q = Qt * Q;
+  Q = Q / (float)rPoints.rows;
+
+  cv::eigen(Q, eval, evec);
+
+  cv::Mat subEval(maxComponents, 1, eval.type(), eval.ptr());
+  cv::Mat subEvec(maxComponents, evec.cols, evec.type(), evec.ptr());
+
+  cv::Mat prjTestPoints, backProjTestPoints, cPoints = rPoints.t(), cTestPoints = rTestPoints.t();
+  CvMat _points, _testPoints, _avg, _eval, _evec, _prjTestPoints, _backPrjTestPoints;
+
+  double eigenEps = 1e-4;
+  double err;
+  for (int i = 0; i < Q.rows; i++) {
+    cv::Mat v = evec.row(i).t();
+    cv::Mat Qv = Q * v;
+    
+    cv::Mat lv = eval.at<float>(1.0) * v;
+    // err = cvtest::norm(Qv, lv, cv::NORM_L2 | cv::NORM_RELATIVE);
+    // std::cout << err << eigenEps << "i =" << i << std::endl;
+  }
+
+  return 0;
+}
+
+int testCase8_eigen() {
+  cv::Mat m = (cv::Mat_<float>(3, 3) << 1, 2, 3, 2, 5, 6, 3, 6, 7); // 输入mat只能是CV_32FC1或CV_64FC1的方阵 
+  cv::Mat eigenvalues;
+  cv::Mat eigenvectors;
+
+  cv::eigen(m, eigenvalues, eigenvectors);
+  std::cout << eigenvalues << std::endl;
+  std::cout << eigenvectors << std::endl;
+
+  // 非对称矩阵：cv::eigenNonSymmetric()。
+
+  return 0;
+}
+
 int main() {
   std::cout << "------- opencv test ------------" << std::endl;
 //   testCase1_showMat(); // ok
@@ -400,6 +464,10 @@ int main() {
   // testCase3_svd_case2();
   // testCase4_calib(); // error
   // testCase5_IPOneImage();
-  testCase6_fillHole();
+  // testCase6_fillHole();
+  // testCase7_PCA();
+  testCase8_eigen();
+
+  std::cout << "-------- opencv test run done -----" << std::endl;
   return 0;
 }
