@@ -456,6 +456,177 @@ int testCase8_eigen() {
   return 0;
 }
 
+// affineMatrix
+void getAffinityMatrix(const cv::Mat& src, cv::Mat affinity) {
+  affinity = cv::Mat::zeros(src.rows * src.cols, src.rows * src.cols, CV_32FC1);
+  std::cout << "Run get affinity matrix size" << affinity.rows << "," << affinity.cols << std::endl;
+  cv::Mat temp1(src.rows * src.cols, 1, CV_8UC1, src.data);
+  cv::Mat norm1;
+  cv::norm(temp1, cv::NORM_L2);
+  std::vector<int> vecs;
+  for (int i = 0; i < temp1.rows; i++) {
+    // vecs.push_back()
+  }
+  return ;
+}
+
+// https://blog.csdn.net/weixin_40647819/article/details/89763505
+cv::Mat guidedFilter(const cv::Mat& I, cv::Mat& p, int r, double eps) {
+  int wsize = 2 * r + 1;
+  I.convertTo(I, CV_64F, 1.0 / 255.0);
+  p.convertTo(p, CV_64F, 1.0 / 255.0);
+
+  cv::Mat meanI;
+  cv::boxFilter(I, meanI, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT); // 盒子滤波
+
+  cv::Mat meanP;
+  cv::boxFilter(p, meanP, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+
+  //corrI=fmean(I.*I)
+	cv::Mat mean_II;
+	mean_II = I.mul(I);
+	cv::boxFilter(mean_II, mean_II, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);//盒子滤波
+ 
+	//corrIp=fmean(I.*p)
+	cv::Mat mean_Ip;
+	mean_Ip = I.mul(p);
+	cv::boxFilter(mean_Ip, mean_Ip, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);//盒子滤波
+ 
+	//varI=corrI-meanI.*meanI
+	cv::Mat var_I, mean_mul_I;
+	mean_mul_I=meanI.mul(meanI);
+	cv::subtract(mean_II, mean_mul_I, var_I);
+ 
+	//covIp=corrIp-meanI.*meanp
+	cv::Mat cov_Ip;
+	cv::subtract(mean_Ip, meanI.mul(meanP), cov_Ip);
+ 
+	//a=conIp./(varI+eps)
+	//b=meanp-a.*meanI
+	cv::Mat a, b;
+	cv::divide(cov_Ip, (var_I+eps),a);
+	cv::subtract(meanP, a.mul(meanI), b);
+ 
+	//meana=fmean(a)
+	//meanb=fmean(b)
+	cv::Mat mean_a, mean_b;
+	cv::boxFilter(a, mean_a, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);//盒子滤波
+	cv::boxFilter(b, mean_b, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);//盒子滤波
+ 
+	//q=meana.*I+meanb
+	cv::Mat q;
+	q = mean_a.mul(I) + mean_b;
+ 
+	//数据类型转换
+	I.convertTo(I, CV_8U, 255);
+	p.convertTo(p, CV_8U, 255);
+	q.convertTo(q, CV_8U, 255);
+  return q;
+}
+
+// 
+void edgeAwareWeighting(cv::Mat& I, cv::Mat& varI, cv::Mat& gamma) {
+  double minVal = 0, maxVal = 0;
+  cv::Point minPoint, maxPoint;
+  cv::minMaxLoc(I, &minVal, &maxVal, NULL, NULL);
+  float L = maxVal - minVal;
+
+  float eps = (0.001 * L) * (0.001 * L);
+  cv::Mat varI1 = varI + eps;
+  gamma = varI1 * cv::sum(1 / varI1)[0] / I.total();
+  cv::GaussianBlur(gamma, gamma, cv::Size(3, 3), 2);
+}
+// https://zhuanlan.zhihu.com/p/609580227
+int weightGruidedFilter(cv::Mat& src, cv::Mat& guidiance, int r, double eps) {
+  int wsize = 2 * r + 1;
+  cv::Mat I, p;
+  src.convertTo(I, CV_32F);
+  p.convertTo(p, CV_32F);
+  // 引导图的均值
+  cv::Mat meanI;
+  cv::boxFilter(I, meanI, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+  // 输入图的均值
+  cv::Mat meanp;
+  cv::boxFilter(p, meanp, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+  // 输入平方的均值
+  cv::Mat meanII;
+  meanII = I.mul(I);
+  cv::boxFilter(meanII, meanII, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+  // 输入图*引导图，然后求均值
+  cv::Mat meanIp;
+  meanIp = I.mul(p);
+  cv::boxFilter(meanIp, meanIp, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+  // 方差
+  cv::Mat varI, meanMulI;
+  meanMulI = meanI.mul(meanI);
+  cv::subtract(meanII, meanMulI, varI);
+
+  // 步骤2
+  cv::Mat covIp, gamma;
+  cv::subtract(meanIp, meanI.mul(meanp), covIp);
+
+  // 计算边缘感知权重 gamma
+  edgeAwareWeighting(I, varI, gamma);
+
+  cv::Mat a, b;
+  cv::divide(covIp, (varI + eps / gamma), a);
+  cv::subtract(meanp, a.mul(meanI), b);
+  
+  cv::Mat meana, meanb;
+  cv::boxFilter(a, meana, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+  cv::boxFilter(b, meanb, -1, cv::Size(wsize, wsize), cv::Point(-1, -1), true, cv::BORDER_REFLECT);
+
+  cv::Mat q;
+  q = meana.mul(I) + meanb;
+
+  q.convertTo(q, CV_8U);
+
+  return 0;
+}
+
+int testCase9_guidedFilter() {
+  cv::Mat src, dst;
+  src = cv::imread("/home/lzh/Pictures/dataset2D/DIP/DIP3E_CH01_Original_Images/DIP3E_Original_Images_CH01/Fig0107(e)(cygnusloop-Xray).tif", -1);
+  cv::namedWindow("src", cv::WINDOW_NORMAL);
+  cv::imshow("src", src);
+  cv::waitKey(0);
+
+  double t2 = (double)cv::getTickCount(); //测时间
+ 
+	cv::Mat dst1, src_input, I;
+	src.copyTo(src_input);
+	if (src.channels() > 1)
+	   cv::cvtColor(src, I, CV_RGB2GRAY); //若引导图为彩色图，则转为灰度图
+	std::vector<cv::Mat> p,q;
+	if (src.channels() > 1){             //输入为彩色图
+		cv::split(src_input, p);
+		for (int i = 0; i < src.channels(); ++i){
+			dst1 = guidedFilter(I, p[i], 9, 0.1*0.1);
+			q.push_back(dst1);
+		}
+		cv::merge(q, dst1);
+	}
+	else{                               //输入为灰度图
+		src.copyTo(I);
+		dst1 = guidedFilter(I, src_input, 9, 0.1*0.1);
+	}
+
+  t2 = (double)cv::getTickCount() - t2;
+	double time2 = (t2 *1000.) / ((double)cv::getTickFrequency());
+	std::cout << "MyGuidedFilter_process=" << time2 << " ms. " << std::endl << std::endl;
+ 
+	cv::namedWindow("GuidedImg", CV_WINDOW_NORMAL);
+	cv::imshow("GuidedImg", I);
+	cv::namedWindow("src", CV_WINDOW_NORMAL);
+	cv::imshow("src", src);
+	cv::namedWindow("GuidedFilter_box", CV_WINDOW_NORMAL);
+	cv::imshow("GuidedFilter_box", dst1);
+	cv::waitKey(0);
+
+
+  return 0;
+}
+
 int main() {
   std::cout << "------- opencv test ------------" << std::endl;
 //   testCase1_showMat(); // ok
@@ -466,7 +637,8 @@ int main() {
   // testCase5_IPOneImage();
   // testCase6_fillHole();
   // testCase7_PCA();
-  testCase8_eigen();
+  // testCase8_eigen();
+  testCase9_guidedFilter();
 
   std::cout << "-------- opencv test run done -----" << std::endl;
   return 0;
