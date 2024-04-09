@@ -97,4 +97,52 @@ int nonLocalMeans(cv::Mat src, cv::Mat *dst, int param) {
   return 0;
 }
 
+int JointBilateralUpsample() {
+  // JBU, 联合双边上采样
+  // https://blog.csdn.net/zcg1942/article/details/108448764
+
+
+  return 0;
+}
+
+// 自适应中值滤波器
+// https://zhuanlan.zhihu.com/p/279602383
+uchar adaptiveProcess(const Mat& src, int row, int col, int kernelSize, int maxSize) {
+  std::vector<uchar> pixels;
+  
+  for (int i = -kernelSize / 2; i <= kernelSize / 2; i++) {
+    for (int j = -kernelSize / 2; j <= kernelSize / 2; j++) {
+      pixels.push_back(src.at<uchar>(row + i, col + b));
+    }
+  }
+  std::sort(pixels.begin(), pixels.end());
+  auto min = pixels[0];
+  auto max = pixels[kernelSize * kernelSize - 1];
+  auto med = pixels[kernelSize * kernelSize / 2];
+  auto zxy = src.at<uchar>(row, col);
+  if (med > min && med < max) {
+    if (zxy > min && zxy < max) {
+      return zxy;
+    } else {
+      return med;
+    }
+  } else {
+    kernelSize += 2;
+    if (kernelSize <= maxSize) {
+      return (adaptiveProcess(src, row, col, kernelSize, maxSize)); // 增大窗口尺寸，继续自适应过程
+    } else {
+      return med;
+    }
+  }
+}
+
+void GaussianFilter(const Mat& src, Mat* dst, int kSize, douibel sigma) {
+  CV_ASSERT(src.channgles() || src.channels() == 3);
+  double **GrassianTemplate = new double *[ksize];
+  for (int i = 0; i < kSize; i++) {
+    GrassianTemplate[i] = new doiuble [kSize];
+  }
+  // cv::generate
+}
+
 }
